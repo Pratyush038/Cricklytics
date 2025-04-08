@@ -902,22 +902,23 @@ with tab2:
             
         st.markdown("</div>", unsafe_allow_html=True)
         
-        # Recommendations Section
-        st.markdown("""
-        <div class="animated-section report-card" style="animation-delay: 0.6s;">
-            <div class='report-header'>Recommendations</div>
-        """, unsafe_allow_html=True)
+        recommendations = analysis_results.get('recommendations', [])
 
-        # Insert each recommendation with styled bullets and subtle animation
-        for i, rec in enumerate(analysis_results['recommendations']):
-            st.markdown(f"""
-            <div class="recommendation-item" style="animation: fadeIn {0.6 + i*0.1}s ease-in-out;">
-                • {rec}
-            </div>
+        if recommendations:
+            st.markdown("""
+            <div class="animated-section report-card" style="animation-delay: 0.6s;">
+                <div class='report-header'>Recommendations</div>
             """, unsafe_allow_html=True)
 
-        # Close the report-card container
-        st.markdown("</div>", unsafe_allow_html=True)
+            for i, rec in enumerate(recommendations):
+                st.markdown(f"""
+                <div class="recommendation-item" style="animation: fadeIn {0.6 + i*0.1}s ease-in-out;">
+                    • {rec}
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.markdown("</div>", unsafe_allow_html=True)
+
 
         if player_type == "Batsman":
             prediction = analysis_results['prediction'].lower()
