@@ -10,6 +10,7 @@ import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.neural_network import MLPClassifier
+import time
 
 st.set_page_config(
     page_title="Cricklytics",
@@ -17,57 +18,168 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom CSS
+# Custom CSS with improved container styling and animations
 st.markdown("""
 <style>
+    /* Main styling and typography */
     .main-header {
         font-size: 2.5rem;
         font-weight: 700;
         color: #1E3A8A;
         text-align: center;
         margin-bottom: 1rem;
+        animation: fadeIn 1s ease-in-out;
     }
+    
     .sub-header {
         font-size: 1.5rem;
         font-weight: 600;
         color: #2563EB;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.8rem;
+        padding-top: 0.5rem;
     }
+    
+    /* Card styling with proper padding and overflow control */
     .card {
         background-color: #F3F4F6;
         border-radius: 0.5rem;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        padding: 1.2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+        word-wrap: break-word;
     }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    
     .card-content {
-        padding: 0.5rem;
+        padding: 0.8rem;
+        overflow: hidden;
+        word-wrap: break-word;
     }
+    
+    /* Report sections styling */
     .report-header {
         background-color: #1E3A8A;
         color: white;
-        padding: 1rem;
+        padding: 1rem 1.5rem;
         border-radius: 0.5rem 0.5rem 0 0;
         font-weight: 600;
+        font-size: 1.2rem;
+        transition: background-color 0.3s ease;
     }
+    
+    .report-header:hover {
+        background-color: #2563EB;
+    }
+    
     .report-body {
         background-color: white;
-        padding: 1.5rem;
+        padding: 1.8rem;
         border-radius: 0 0 0.5rem 0.5rem;
         border: 1px solid #E5E7EB;
+        overflow: hidden;
+        word-wrap: break-word;
+        margin-bottom: 2rem;
     }
+    
+    /* Model info card */
     .model-info {
         background-color: #EFF6FF;
         border-left: 4px solid #3B82F6;
+        padding: 1.2rem;
+        margin-bottom: 1.5rem;
+        border-radius: 0.25rem;
+        transition: background-color 0.3s ease;
+    }
+    
+    .model-info:hover {
+        background-color: #DBEAFE;
+    }
+    
+    /* List styling for recommendations */
+    .recommendation-item {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #F3F4F6;
+        transition: background-color 0.2s ease;
+    }
+    
+    .recommendation-item:hover {
+        background-color: #F9FAFB;
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Animation keyframes */
+    @keyframes fadeIn {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Fix for tab content */
+    .stTabs [data-baseweb="tab-panel"] {
+        padding-top: 1rem;
+        overflow: auto;
+    }
+    
+    /* Fix for text overflow in all containers */
+    div[data-testid="stVerticalBlock"] {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    /* Streamlit element fixes */
+    .element-container {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    /* Ensure text in columns doesn't overflow */
+    .row-widget.stHorizontal {
+        flex-wrap: wrap;
+    }
+    
+    /* Footer styling */
+    .footer {
+        text-align: center;
         padding: 1rem;
-        margin-bottom: 1rem;
+        color: #6B7280;
+        font-size: 0.875rem;
+        border-top: 1px solid #E5E7EB;
+        margin-top: 2rem;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# App Header
-st.markdown("<h1 class='main-header'>🏏 Cricklytics</h1>", unsafe_allow_html=True)
-st.markdown("Analyze cricket player performance with AI-powered insights from pre-trained models.")
+# App Header with animation effect
+def display_header():
+    st.markdown("<h1 class='main-header'>🏏 Cricklytics</h1>", unsafe_allow_html=True)
+    
+    # Add a subheading with animation
+    st.markdown(
+        """
+        <div style="text-align: center; animation: fadeIn 1.5s ease-in-out; margin-bottom: 1.5rem;">
+            <p style="font-size: 1.2rem; color: #4B5563;">
+                Analyze cricket player performance with AI-powered insights from pre-trained models
+            </p>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
+
+display_header()
 
 # Hardcoded model functionality
 def classify_batter(player_data):
@@ -176,7 +288,7 @@ def classify_bowler(player_data):
     
     return f"{experience} {style}"
 
-# Sidebar for model selection
+# Sidebar for model selection with improved styling
 with st.sidebar:
     st.markdown("<h2 class='sub-header'>Player Category</h2>", unsafe_allow_html=True)
     
@@ -198,7 +310,28 @@ with st.sidebar:
     st.markdown("### About")
     st.write("This app uses machine learning to analyze cricket player stats and generate performance insights.")
 
-# Main app content
+# Custom tab styling with animation
+tab_style = """
+<style>
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        transition: background-color 0.3s ease, color 0.3s ease;
+        border-radius: 4px 4px 0 0;
+        padding: 8px 16px;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background-color: #1E3A8A !important;
+        color: white !important;
+    }
+</style>
+"""
+st.markdown(tab_style, unsafe_allow_html=True)
+
+# Main app content with improved tabs
 tab1, tab2 = st.tabs(["Player Analysis", "Results"])
 
 with tab1:
@@ -253,11 +386,23 @@ with tab1:
             
         career_length = end_year - start_year + 1
     
-    analyze_button = st.button("Generate Analysis Report", type="primary", use_container_width=True)
+    # Add a visual separator before the button
+    st.markdown("""
+    <div style="height: 1px; background-color: #E5E7EB; margin: 1rem 0;"></div>
+    """, unsafe_allow_html=True)
+    
+    # Improved button with animation
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        analyze_button = st.button("Generate Analysis Report", type="primary", use_container_width=True)
 
 # Function to generate analysis based on player data
 def generate_analysis(player_data, player_type):
     try:
+        # Add a small delay for animation effect
+        with st.spinner("Analyzing player data..."):
+            time.sleep(0.8)
+            
         # Classification based on model type
         if player_type == "Batsman":
             prediction = classify_batter(player_data)
@@ -370,9 +515,15 @@ def generate_analysis(player_data, player_type):
             "insights": [f"An error occurred: {str(e)}"]
         }
 
-# Function to create visualization for player stats
+# Function to create visualization for player stats with improved styling
 def create_player_visualization(player_data, player_type):
-    fig, ax = plt.subplots(figsize=(10, 6))
+    # Set a cohesive visual style
+    plt.style.use('seaborn-v0_8-darkgrid')
+    
+    fig, ax = plt.subplots(figsize=(10, 6), facecolor='#F9FAFB')
+    
+    # Define a custom color palette
+    colors = ['#2563EB', '#1E40AF', '#3B82F6', '#60A5FA', '#93C5FD']
     
     if player_type == "Batsman":
         # Radar chart data
@@ -392,11 +543,21 @@ def create_player_visualization(player_data, player_type):
         values += values[:1]  # Close the polygon
         angles += angles[:1]  # Close the polygon
         
-        ax.plot(angles, values, linewidth=2, linestyle='solid')
-        ax.fill(angles, values, alpha=0.25)
+        ax.plot(angles, values, linewidth=2.5, linestyle='solid', color=colors[0])
+        ax.fill(angles, values, alpha=0.4, color=colors[2])
+        
+        # Improve radar chart styling
         ax.set_xticks(angles[:-1])
-        ax.set_xticklabels(categories)
-        ax.set_title(f"Batting Performance - {player_data['name']}")
+        ax.set_xticklabels(categories, fontsize=11, fontweight='bold')
+        ax.set_title(f"Batting Performance - {player_data['name']}", fontsize=14, fontweight='bold', pad=20)
+        
+        # Add grid lines
+        ax.set_rgrids([0.2, 0.4, 0.6, 0.8], angle=0, fontsize=8)
+        
+        # Add subtle annotations for context
+        for i, v in enumerate(values[:-1]):
+            ax.text(angles[i], v + 0.05, f"{int(v*100)}%", 
+                   color=colors[0], fontweight='bold', ha='center', va='center')
         
     elif player_type == "Bowler":
         # Radar chart data
@@ -419,17 +580,34 @@ def create_player_visualization(player_data, player_type):
         values += values[:1]  # Close the polygon
         angles += angles[:1]  # Close the polygon
         
-        ax.plot(angles, values, linewidth=2, linestyle='solid')
-        ax.fill(angles, values, alpha=0.25)
+        ax.plot(angles, values, linewidth=2.5, linestyle='solid', color=colors[1])
+        ax.fill(angles, values, alpha=0.4, color=colors[3])
+        
+        # Improve radar chart styling
         ax.set_xticks(angles[:-1])
-        ax.set_xticklabels(categories)
-        ax.set_title(f"Bowling Performance - {player_data['name']}")
+        ax.set_xticklabels(categories, fontsize=11, fontweight='bold')
+        ax.set_title(f"Bowling Performance - {player_data['name']}", fontsize=14, fontweight='bold', pad=20)
+        
+        # Add grid lines
+        ax.set_rgrids([0.2, 0.4, 0.6, 0.8], angle=0, fontsize=8)
+        
+        # Add subtle annotations for context
+        for i, v in enumerate(values[:-1]):
+            ax.text(angles[i], v + 0.05, f"{int(v*100)}%", 
+                   color=colors[1], fontweight='bold', ha='center', va='center')
     
+    plt.tight_layout()
     return fig
 
-# Generate player comparison chart
+# Generate player comparison chart with improved styling
 def create_player_comparison(player_data, player_type):
-    fig, ax = plt.subplots(figsize=(10, 6))
+    # Set a cohesive visual style
+    plt.style.use('seaborn-v0_8-whitegrid')
+    
+    fig, ax = plt.subplots(figsize=(10, 6), facecolor='#F9FAFB')
+    
+    # Define a consistent color palette
+    colors = ['#2563EB', '#1E40AF', '#3B82F6', '#60A5FA', '#93C5FD']
     
     if player_type == "Batsman":
         # Sample reference values for different player types
@@ -449,20 +627,42 @@ def create_player_comparison(player_data, player_type):
         x = np.arange(len(metrics))
         width = 0.15
         
-        # Plot bars
+        # Plot bars with improved styling
         for i, (role, values) in enumerate(reference_data.items()):
             offset = width * (i - len(reference_data)/2 + 0.5)
             values_list = [values[m] for m in metrics]
-            rects = ax.bar(x + offset, values_list, width, label=role)
+            rects = ax.bar(x + offset, values_list, width, label=role, color=colors[i % len(colors)], 
+                          alpha=0.8 if role != "Current Player" else 1.0,
+                          edgecolor='white', linewidth=0.7)
+            
+            # Add value labels on top of bars
+            if role == "Current Player":
+                for j, v in enumerate(values_list):
+                    ax.text(x[j] + offset, v + 2, f'{v:.1f}', ha='center', va='bottom', 
+                           fontsize=8, fontweight='bold', color=colors[i % len(colors)])
         
         # Customize plot
-        ax.set_xlabel('Metrics')
-        ax.set_ylabel('Value')
-        ax.set_title('Player Comparison with Different Batting Styles')
+        ax.set_xlabel('Metrics', fontsize=12, fontweight='bold', labelpad=10)
+        ax.set_ylabel('Value', fontsize=12, fontweight='bold', labelpad=10)
+        ax.set_title('Player Comparison with Different Batting Styles', fontsize=14, fontweight='bold', pad=20)
         ax.set_xticks(x)
-        ax.set_xticklabels(metric_labels)
-        ax.legend()
-        ax.grid(axis='y', linestyle='--', alpha=0.7)
+        ax.set_xticklabels(metric_labels, fontsize=10, fontweight='bold')
+        
+        # Improve legend
+        legend = ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), 
+                         ncol=5, frameon=True, fontsize=10)
+        frame = legend.get_frame()
+        frame.set_facecolor('#F3F4F6')
+        frame.set_edgecolor('#E5E7EB')
+        
+        # Add grid only for y-axis and make it subtle
+        ax.grid(axis='y', linestyle='--', alpha=0.3)
+        ax.set_axisbelow(True)
+        
+        # Add subtle background shading to alternate metrics
+        for i in range(len(metrics)):
+            if i % 2 == 0:
+                ax.axvspan(i - 0.5, i + 0.5, color='#F3F4F6', alpha=0.3, zorder=0)
         
     elif player_type == "Bowler":
         # Sample reference values for different player types
@@ -485,22 +685,44 @@ def create_player_comparison(player_data, player_type):
         # Set x positions and width
         x = np.arange(len(metrics))
         width = 0.15
-        
-        # Plot bars
+# Plot bars with improved styling
         for i, (role, values) in enumerate(reference_data.items()):
             offset = width * (i - len(reference_data)/2 + 0.5)
             values_list = [values[m] for m in metrics]
-            rects = ax.bar(x + offset, values_list, width, label=role)
+            rects = ax.bar(x + offset, values_list, width, label=role, color=colors[i % len(colors)], 
+                            alpha=0.8 if role != "Current Player" else 1.0,
+                            edgecolor='white', linewidth=0.7)
+            
+            # Highlight the current player's bars
+            if role == "Current Player":
+                for j, v in enumerate(values_list):
+                    ax.text(x[j] + offset, v + 0.1, f'{v:.1f}', ha='center', va='bottom', 
+                            fontsize=8, fontweight='bold', color=colors[i % len(colors)])
         
         # Customize plot
-        ax.set_xlabel('Metrics')
-        ax.set_ylabel('Value')
-        ax.set_title('Player Comparison with Different Bowling Styles')
+        ax.set_xlabel('Metrics', fontsize=12, fontweight='bold', labelpad=10)
+        ax.set_ylabel('Value', fontsize=12, fontweight='bold', labelpad=10)
+        ax.set_title('Player Comparison with Different Bowling Styles', fontsize=14, fontweight='bold', pad=20)
         ax.set_xticks(x)
-        ax.set_xticklabels(metric_labels)
-        ax.legend()
-        ax.grid(axis='y', linestyle='--', alpha=0.7)
+        ax.set_xticklabels(metric_labels, fontsize=10, fontweight='bold')
+        
+        # Improve legend
+        legend = ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), 
+                            ncol=5, frameon=True, fontsize=10)
+        frame = legend.get_frame()
+        frame.set_facecolor('#F3F4F6')
+        frame.set_edgecolor('#E5E7EB')
+        
+        # Add grid only for y-axis and make it subtle
+        ax.grid(axis='y', linestyle='--', alpha=0.3)
+        ax.set_axisbelow(True)
+        
+        # Add subtle background shading to alternate metrics
+        for i in range(len(metrics)):
+            if i % 2 == 0:
+                ax.axvspan(i - 0.5, i + 0.5, color='#F3F4F6', alpha=0.3, zorder=0)
     
+    plt.tight_layout()
     return fig
 
 # Process analysis if button is clicked
@@ -508,6 +730,14 @@ if 'analyzed' not in st.session_state:
     st.session_state.analyzed = False
 
 if analyze_button:
+    # Show a progress bar for visual feedback
+    progress_bar = st.progress(0)
+    
+    # Simulate processing steps with animation
+    for percent_complete in range(101):
+        time.sleep(0.01)  # Small delay for animation effect
+        progress_bar.progress(percent_complete)
+    
     # Prepare player data
     if model_category == "Batsman":
         player_data = {
@@ -517,7 +747,7 @@ if analyze_button:
             "sr": strike_rate,
             "avg": average,
             "boundary_pct": boundary_percent,
-            "career_length": career_length  # Use career_length consistently
+            "career_length": career_length
         }
     else:  # Bowler
         player_data = {
@@ -526,7 +756,7 @@ if analyze_button:
             "wickets": wickets,
             "econ": economy,
             "sr": strike_rate,
-            "career_length": career_length  # Use career_length consistently
+            "career_length": career_length
         }
     
     # Generate analysis
@@ -535,20 +765,49 @@ if analyze_button:
     st.session_state.player_type = model_category
     st.session_state.analyzed = True
     
+    # Clear the progress bar
+    progress_bar.empty()
+    
+    # Display a success message with animation
+    st.success("Analysis completed successfully!")
+    time.sleep(0.5)  # Brief pause
+    
     # Switch to Results tab
-    st.experimental_rerun()
+    st.rerun()
 
-# Display results in the Results tab
+# Display results in the Results tab with improved styling
 with tab2:
     if st.session_state.get('analyzed', False):
         player_data = st.session_state.player_data
         analysis_results = st.session_state.analysis_results
         player_type = st.session_state.player_type
         
-        st.markdown("<h2 class='sub-header'>Player Analysis Results</h2>", unsafe_allow_html=True)
+        # Add a slide-in animation effect for results
+        st.markdown("""
+        <style>
+            @keyframes slideIn {
+                0% { opacity: 0; transform: translateY(20px); }
+                100% { opacity: 1; transform: translateY(0); }
+            }
+            .animated-section {
+                animation: slideIn 0.6s ease-out forwards;
+            }
+        </style>
+        """, unsafe_allow_html=True)
         
-        # Player info card
-        st.markdown("<div class='report-header'>Player Information</div>", unsafe_allow_html=True)
+        st.markdown("""
+        <div class="animated-section">
+            <h2 class='sub-header'>Player Analysis Results</h2>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Player info card with improved styling
+        st.markdown("""
+        <div class="animated-section" style="animation-delay: 0.2s;">
+            <div class='report-header'>Player Information</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
         st.markdown("<div class='report-body'>", unsafe_allow_html=True)
         
         col1, col2 = st.columns(2)
@@ -556,7 +815,7 @@ with tab2:
         with col1:
             st.subheader(f"{player_data['name']}")
             st.write(f"Player Type: {player_type}")
-            st.write(f"Career Span: {player_data['career_length']} years")  # Consistent naming
+            st.write(f"Career Span: {player_data['career_length']} years")
         
         with col2:
             if player_type == "Batsman":
@@ -573,18 +832,36 @@ with tab2:
         
         st.markdown("</div>", unsafe_allow_html=True)
         
-        # Analysis results
-        st.markdown("<div class='report-header'>AI Analysis</div>", unsafe_allow_html=True)
+        # Analysis results with animation delay
+        st.markdown("""
+        <div class="animated-section" style="animation-delay: 0.4s;">
+            <div class='report-header'>AI Analysis</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
         st.markdown("<div class='report-body'>", unsafe_allow_html=True)
         
-        st.subheader("Player Classification")
-        st.write(f"**{analysis_results['prediction']}**")
+        # Player classification with highlight
+        st.markdown("""
+        <h3 style="margin-bottom:0.5rem;">Player Classification</h3>
+        <div style="background-color:#EFF6FF; padding:1rem; border-left:4px solid #3B82F6; margin-bottom:1.5rem; border-radius:0.25rem;">
+            <span style="font-size:1.2rem; font-weight:600; color:#1E3A8A;">
+                {}
+            </span>
+        </div>
+        """.format(analysis_results['prediction']), unsafe_allow_html=True)
         
+        # Key insights with improved styling
         st.subheader("Key Insights")
-        for insight in analysis_results['insights']:
-            st.write(f"• {insight}")
+        for i, insight in enumerate(analysis_results['insights']):
+            # Add a slight delay effect between items
+            st.markdown(f"""
+            <div class="recommendation-item" style="animation: fadeIn {0.6 + i*0.1}s ease-in-out;">
+                • {insight}
+            </div>
+            """, unsafe_allow_html=True)
             
-        # Visualization
+        # Visualization with improved layout
         col1, col2 = st.columns(2)
         
         with col1:
@@ -605,91 +882,176 @@ with tab2:
             
         st.markdown("</div>", unsafe_allow_html=True)
         
-        # Recommendations section
-        st.markdown("<div class='report-header'>Recommendations</div>", unsafe_allow_html=True)
+        # Recommendations section with animation delay
+        st.markdown("""
+        <div class="animated-section" style="animation-delay: 0.6s;">
+            <div class='report-header'>Recommendations</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
         st.markdown("<div class='report-body'>", unsafe_allow_html=True)
         
         if player_type == "Batsman":
             prediction = analysis_results['prediction'].lower()
             
+            recommendations = []
             # Based on player classification
             if "elite" in prediction:
-                st.write("• Continue with the current approach - excellent performance metrics")
-                st.write("• Focus on maintaining consistency across different match conditions")
-                st.write("• Consider mentoring younger players to share expertise")
+                recommendations = [
+                    "Continue with the current approach - excellent performance metrics",
+                    "Focus on maintaining consistency across different match conditions",
+                    "Consider mentoring younger players to share expertise"
+                ]
             elif "anchor" in prediction:
                 if "inexperienced" in prediction:
-                    st.write("• Work on building innings against different bowling types")
-                    st.write("• Focus on rotating strike more effectively in middle overs")
-                    st.write("• Develop power-hitting skills for late innings acceleration")
+                    recommendations = [
+                        "Work on building innings against different bowling types",
+                        "Focus on rotating strike more effectively in middle overs",
+                        "Develop power-hitting skills for late innings acceleration"
+                    ]
                 else:
-                    st.write("• Continue to leverage experience while building partnerships")
-                    st.write("• Work on tactical aspects against specific bowling types")
-                    st.write("• Consider improving strike rotation in middle overs")
+                    recommendations = [
+                        "Continue to leverage experience while building partnerships",
+                        "Work on tactical aspects against specific bowling types",
+                        "Consider improving strike rotation in middle overs"
+                    ]
             elif "power" in prediction:
                 if "inexperienced" in prediction:
-                    st.write("• Work on consistency while maintaining aggressive approach")
-                    st.write("• Develop technique against quality bowling attacks")
-                    st.write("• Practice situational batting for different match scenarios")
+                    recommendations = [
+                        "Work on consistency while maintaining aggressive approach",
+                        "Develop technique against quality bowling attacks",
+                        "Practice situational batting for different match scenarios"
+                    ]
                 else:
-                    st.write("• Continue leveraging power-hitting abilities in appropriate situations")
-                    st.write("• Work on improving shot selection against specific bowlers")
-                    st.write("• Consider adding more variety to attacking options")
+                    recommendations = [
+                        "Continue leveraging power-hitting abilities in appropriate situations",
+                        "Work on improving shot selection against specific bowlers",
+                        "Consider adding more variety to attacking options"
+                    ]
             elif "finisher" in prediction:
                 if "inexperienced" in prediction:
-                    st.write("• Develop composure in high-pressure situations")
-                    st.write("• Practice specific end-game scenarios")
-                    st.write("• Work on identifying bowlers' variations in death overs")
+                    recommendations = [
+                        "Develop composure in high-pressure situations",
+                        "Practice specific end-game scenarios",
+                        "Work on identifying bowlers' variations in death overs"
+                    ]
                 else:
-                    st.write("• Continue utilizing experience in pressure situations")
-                    st.write("• Consider expanding range of shots for specific match situations")
-                    st.write("• Work on partnership building in run chases")
+                    recommendations = [
+                        "Continue utilizing experience in pressure situations",
+                        "Consider expanding range of shots for specific match situations",
+                        "Work on partnership building in run chases"
+                    ]
             else:
-                st.write("• Focus on technical refinement for improved consistency")
-                st.write("• Work on specific match scenarios to improve decision making")
-                st.write("• Develop a more defined batting identity based on strengths")
+                recommendations = [
+                    "Focus on technical refinement for improved consistency",
+                    "Work on specific match scenarios to improve decision making",
+                    "Develop a more defined batting identity based on strengths"
+                ]
+                
+            # Display recommendations with animations
+            for i, rec in enumerate(recommendations):
+                st.markdown(f"""
+                <div class="recommendation-item" style="animation: fadeIn {0.8 + i*0.15}s ease-in-out;">
+                    <span style="color:#2563EB; font-weight:600;">•</span> {rec}
+                </div>
+                """, unsafe_allow_html=True)
+                
         else:  # Bowler
             prediction = analysis_results['prediction'].lower()
             
+            recommendations = []
             if "elite" in prediction:
-                st.write("• Continue current approach - excellent bowling metrics")
-                st.write("• Maintain physical conditioning to ensure longevity")
-                st.write("• Consider developing additional variations to stay ahead of batsmen")
+                recommendations = [
+                    "Continue current approach - excellent bowling metrics",
+                    "Maintain physical conditioning to ensure longevity",
+                    "Consider developing additional variations to stay ahead of batsmen"
+                ]
             elif "wicket taker" in prediction:
                 if "inexperienced" in prediction:
-                    st.write("• Work on consistency while maintaining attacking approach")
-                    st.write("• Develop better control to improve economy rate")
-                    st.write("• Focus on specific plans for different types of batsmen")
+                    recommendations = [
+                        "Work on consistency while maintaining attacking approach",
+                        "Develop better control to improve economy rate",
+                        "Focus on specific plans for different types of batsmen"
+                    ]
                 else:
-                    st.write("• Continue to leverage experience in setting up dismissals")
-                    st.write("• Work on improving economy rate in certain phases")
-                    st.write("• Consider adding more variations to your arsenal")
+                    recommendations = [
+                        "Continue to leverage experience in setting up dismissals",
+                        "Work on improving economy rate in certain phases",
+                        "Consider adding more variations to your arsenal"
+                    ]
             elif "economist" in prediction:
                 if "inexperienced" in prediction:
-                    st.write("• Maintain control while working on wicket-taking deliveries")
-                    st.write("• Develop specific variations to challenge batsmen")
-                    st.write("• Practice bowling plans for different match situations")
+                    recommendations = [
+                        "Maintain control while working on wicket-taking deliveries",
+                        "Develop specific variations to challenge batsmen",
+                        "Practice bowling plans for different match situations"
+                    ]
                 else:
-                    st.write("• Continue using experience to contain quality batsmen")
-                    st.write("• Work on developing more wicket-taking deliveries")
-                    st.write("• Consider tactical improvements for different phases of the game")
+                    recommendations = [
+                        "Continue using experience to contain quality batsmen",
+                        "Work on developing more wicket-taking deliveries",
+                        "Consider tactical improvements for different phases of the game"
+                    ]
             else:
-                st.write("• Focus on technical refinement for improved consistency")
-                st.write("• Work on specific skills like yorkers or slower balls")
-                st.write("• Develop a more defined bowling identity based on strengths")
+                recommendations = [
+                    "Focus on technical refinement for improved consistency",
+                    "Work on specific skills like yorkers or slower balls",
+                    "Develop a more defined bowling identity based on strengths"
+                ]
+            
+            # Display recommendations with animations
+            for i, rec in enumerate(recommendations):
+                st.markdown(f"""
+                <div class="recommendation-item" style="animation: fadeIn {0.8 + i*0.15}s ease-in-out;">
+                    <span style="color:#2563EB; font-weight:600;">•</span> {rec}
+                </div>
+                """, unsafe_allow_html=True)
                 
         st.markdown("</div>", unsafe_allow_html=True)
         
-        # Export options
-        st.download_button(
-            label="Download Analysis Report (CSV)",
-            data=pd.DataFrame([player_data]).to_csv(index=False),
-            file_name=f"{player_data['name']}_analysis.csv",
-            mime="text/csv",
-        )
+        # Export options with improved styling
+        st.markdown("""
+        <div class="animated-section" style="animation-delay: 0.8s;">
+            <div style="background-color:#F3F4F6; padding:1rem; border-radius:0.5rem; 
+                        margin-top:1.5rem; text-align:center; border:1px solid #E5E7EB;">
+                <h3 style="margin-bottom:0.8rem; color:#1E3A8A;">Export Analysis</h3>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Centered download button with animation
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            st.download_button(
+                label="Download Analysis Report (CSV)",
+                data=pd.DataFrame([player_data]).to_csv(index=False),
+                file_name=f"{player_data['name']}_analysis.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
     else:
-        st.info("Please input player statistics and click 'Generate Analysis Report' to view results.")
+        # More attractive placeholder when no analysis has been done
+        st.markdown("""
+        <div style="background-color:#EFF6FF; padding:2rem; border-radius:0.5rem; 
+                    text-align:center; margin-top:2rem; border:1px dashed #60A5FA;">
+            <img src="https://www.svgrepo.com/show/474595/analytics.svg" width="80" 
+                 style="opacity:0.7; margin-bottom:1rem;">
+            <h3 style="color:#1E3A8A; margin-bottom:0.5rem;">No Analysis Results Yet</h3>
+            <p style="color:#4B5563;">Please input player statistics and click 'Generate Analysis Report' to view results.</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-# Footer
+# Improved footer with animation
 st.markdown("---")
-st.markdown("Cricklytics | Powered by AI")
+st.markdown("""
+<div class="footer">
+    <div style="display:flex; justify-content:center; align-items:center; gap:0.5rem;">
+        <span>Cricklytics</span>
+        <span style="color:#3B82F6;">•</span>
+        <span>Powered by AI</span>
+    </div>
+    <div style="margin-top:0.5rem; font-size:0.75rem; color:#9CA3AF;">
+        © 2025 | Cricket Performance Analytics
+    </div>
+</div>
+""", unsafe_allow_html=True)
