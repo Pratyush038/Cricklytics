@@ -537,7 +537,8 @@ def create_player_visualization(player_data, player_type):
             min(1.0, player_data["avg"] / 60),
             player_data["boundary_pct"] / 100
         ]
-        
+        # Create a polar subplot (this is the fix)
+        fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
         # Create the radar chart
         angles = np.linspace(0, 2*np.pi, len(categories), endpoint=False).tolist()
         values += values[:1]  # Close the polygon
