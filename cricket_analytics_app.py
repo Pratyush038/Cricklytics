@@ -565,7 +565,7 @@ def create_player_visualization(player_data, player_type):
         for i, v in enumerate(values[:-1]):
             ax.text(angles[i], v + 0.05, f"{int(v * 100)}%", color=colors[0],
                     fontsize=8, ha='center', va='center', fontweight='bold')
-    
+            
         
     elif player_type == "Bowler":
         # Radar chart data
