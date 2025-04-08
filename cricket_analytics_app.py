@@ -549,7 +549,16 @@ def create_player_visualization(player_data, player_type):
         
         # Improve radar chart styling
         ax.set_xticks(angles[:-1])
-        ax.set_xticklabels(categories, fontsize=11, fontweight='bold')
+        ax.set_xticks(angles[:-1])
+        ax.set_xticklabels(categories)
+        for label, angle in zip(ax.get_xticklabels(), angles[:-1]):
+            label.set_fontsize(9)
+            label.set_fontweight('semibold')
+            label.set_horizontalalignment('center')
+            label.set_verticalalignment('center')
+            x, y = np.cos(angle), np.sin(angle)
+            label.set_position((1.12 * x, 1.12 * y))
+
         ax.set_title(f"Batting Performance - {player_data['name']}", fontsize=14, fontweight='bold', pad=20)
         
         # Add grid lines
