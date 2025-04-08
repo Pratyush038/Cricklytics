@@ -783,91 +783,103 @@ if analyze_button:
     # Switch to Results tab
     st.rerun()
 
-# Display results in the Results tab with improved styling
 with tab2:
     if st.session_state.get('analyzed', False):
         player_data = st.session_state.player_data
         analysis_results = st.session_state.analysis_results
         player_type = st.session_state.player_type
-        
-        # Add a slide-in animation effect for results
+
+        # CSS Styling and Animation
         st.markdown("""
         <style>
             @keyframes slideIn {
                 0% { opacity: 0; transform: translateY(20px); }
                 100% { opacity: 1; transform: translateY(0); }
             }
+
             .animated-section {
                 animation: slideIn 0.6s ease-out forwards;
+                margin-bottom: 1.5rem;
+            }
+
+            .report-card {
+                background-color: #1f2937;  /* dark background for contrast */
+                border-radius: 10px;
+                padding: 1.5rem;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                margin-bottom: 2rem;
+                color: #f9fafb;
+            }
+
+            .report-header {
+                font-size: 1.25rem;
+                font-weight: bold;
+                color: #3B82F6;
+                margin-bottom: 1rem;
+            }
+
+            .recommendation-item {
+                font-size: 1rem;
+                padding: 0.25rem 0;
+            }
+
+            h3 {
+                margin-top: 0;
+                color: #93c5fd;
             }
         </style>
         """, unsafe_allow_html=True)
-        
-        st.markdown("""
-        <div class="animated-section">
-            <h2 class='sub-header'>Player Analysis Results</h2>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Player info card with improved styling
-        st.markdown("""
-        <div class="animated-section" style="animation-delay: 0.2s;">
-            <div class='report-header'>Player Information</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("<div class='report-body'>", unsafe_allow_html=True)
-        
+
+        # Header
+        st.markdown("<div class='animated-section'><h2 class='sub-header'>Player Analysis Results</h2></div>", unsafe_allow_html=True)
+
+        # Player Info Card
+        st.markdown("<div class='animated-section report-card'>", unsafe_allow_html=True)
+        st.markdown("<div class='report-header'>Player Information</div>", unsafe_allow_html=True)
+
         col1, col2 = st.columns(2)
-        
         with col1:
-            st.subheader(f"{player_data['name']}")
-            st.write(f"Player Type: {player_type}")
-            st.write(f"Career Span: {player_data['career_length']} years")
-        
+            st.markdown(f"**Name:** {player_data['name']}")
+            st.markdown(f"**Player Type:** {player_type}")
+            st.markdown(f"**Career Span:** {player_data['career_length']} years")
         with col2:
             if player_type == "Batsman":
-                st.write(f"Matches: {player_data['mat']}")
-                st.write(f"Runs: {player_data['runs']}")
-                st.write(f"Average: {player_data['avg']}")
-                st.write(f"Strike Rate: {player_data['sr']}")
-                st.write(f"Boundary %: {player_data['boundary_pct']}%")
-            else:  # Bowler
-                st.write(f"Matches: {player_data['mat']}")
-                st.write(f"Wickets: {player_data['wickets']}")
-                st.write(f"Economy: {player_data['econ']}")
-                st.write(f"Strike Rate: {player_data['sr']}")
-        
+                st.markdown(f"**Matches:** {player_data['mat']}")
+                st.markdown(f"**Runs:** {player_data['runs']}")
+                st.markdown(f"**Average:** {player_data['avg']}")
+                st.markdown(f"**Strike Rate:** {player_data['sr']}")
+                st.markdown(f"**Boundary %:** {player_data['boundary_pct']}%")
+            else:
+                st.markdown(f"**Matches:** {player_data['mat']}")
+                st.markdown(f"**Wickets:** {player_data['wickets']}")
+                st.markdown(f"**Economy:** {player_data['econ']}")
+                st.markdown(f"**Strike Rate:** {player_data['sr']}")
         st.markdown("</div>", unsafe_allow_html=True)
-        
-        # Analysis results with animation delay
-        st.markdown("""
-        <div class="animated-section" style="animation-delay: 0.4s;">
-            <div class='report-header'>AI Analysis</div>
+
+        # AI Analysis Block
+        st.markdown("<div class='animated-section report-card'>", unsafe_allow_html=True)
+        st.markdown("<div class='report-header'>AI Analysis</div>", unsafe_allow_html=True)
+
+        # Classification Box
+        st.markdown(f"""
+        <h3>Player Classification</h3>
+        <div style="background-color:#EFF6FF; padding:1rem; border-left:4px solid #3B82F6; 
+                    margin-bottom:1.5rem; border-radius:0.25rem; color:#1E3A8A; font-weight:600;">
+            {analysis_results['prediction']}
         </div>
         """, unsafe_allow_html=True)
-        
-        st.markdown("<div class='report-body'>", unsafe_allow_html=True)
-        
-        # Player classification with highlight
-        st.markdown("""
-        <h3 style="margin-bottom:0.5rem;">Player Classification</h3>
-        <div style="background-color:#EFF6FF; padding:1rem; border-left:4px solid #3B82F6; margin-bottom:1.5rem; border-radius:0.25rem;">
-            <span style="font-size:1.2rem; font-weight:600; color:#1E3A8A;">
-                {}
-            </span>
-        </div>
-        """.format(analysis_results['prediction']), unsafe_allow_html=True)
-        
-        # Key insights with improved styling
+
+        # Key Insights
         st.subheader("Key Insights")
         for i, insight in enumerate(analysis_results['insights']):
-            # Add a slight delay effect between items
             st.markdown(f"""
             <div class="recommendation-item" style="animation: fadeIn {0.6 + i*0.1}s ease-in-out;">
                 • {insight}
             </div>
             """, unsafe_allow_html=True)
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
             
         # Visualization with improved layout
         col1, col2 = st.columns(2)
