@@ -345,19 +345,19 @@ with tab1:
                 st.markdown("<div class='card'>", unsafe_allow_html=True)
                 st.markdown("<div class='card-content'>", unsafe_allow_html=True)
                 player_name = st.text_input("Player Name")
-                matches = st.number_input("Matches Played", min_value=1, value=50)
-                runs = st.number_input("Total Runs", min_value=0, value=1500)
-                strike_rate = st.number_input("Strike Rate", min_value=0.0, value=85.0, format="%.2f")
+                matches = st.number_input("Matches Played", min_value=1)
+                runs = st.number_input("Total Runs", min_value=0)
+                strike_rate = st.number_input("Strike Rate", min_value=0.0, format="%.2f")
                 st.markdown("</div></div>", unsafe_allow_html=True)
         
         with col2:
             with st.container():
                 st.markdown("<div class='card'>", unsafe_allow_html=True)
                 st.markdown("<div class='card-content'>", unsafe_allow_html=True)
-                average = st.number_input("Batting Average", min_value=0.0, value=35.0, format="%.2f")
-                boundary_percent = st.slider("Boundary Percentage", 0.0, 100.0, 40.0, format="%.1f")
-                start_year = st.number_input("Career Start Year", min_value=1950, max_value=datetime.now().year, value=2010)
-                end_year = st.number_input("Career End Year (Current year if active)", min_value=1950, max_value=datetime.now().year, value=datetime.now().year)
+                average = st.number_input("Batting Average", min_value=0.0, format="%.2f")
+                boundary_percent = st.slider("Boundary Percentage", 0.0, 100.0, format="%.1f")
+                start_year = st.number_input("Career Start Year", min_value=1950, max_value=datetime.now().year)
+                end_year = st.number_input("Career End Year (Current year if active)", min_value=1950, max_value=datetime.now().year)
                 st.markdown("</div></div>", unsafe_allow_html=True)
             
         career_length = end_year - start_year + 1
@@ -370,18 +370,18 @@ with tab1:
                 st.markdown("<div class='card'>", unsafe_allow_html=True)
                 st.markdown("<div class='card-content'>", unsafe_allow_html=True)
                 player_name = st.text_input("Player Name")
-                matches = st.number_input("Matches Played", min_value=1, value=50)
-                wickets = st.number_input("Total Wickets", min_value=0, value=75)
+                matches = st.number_input("Matches Played", min_value=1)
+                wickets = st.number_input("Total Wickets", min_value=0)
                 st.markdown("</div></div>", unsafe_allow_html=True)
         
         with col2:
             with st.container():
                 st.markdown("<div class='card'>", unsafe_allow_html=True)
                 st.markdown("<div class='card-content'>", unsafe_allow_html=True)
-                economy = st.number_input("Economy Rate", min_value=0.0, value=4.5, format="%.2f")
-                strike_rate = st.number_input("Bowling Strike Rate", min_value=0.0, value=30.0, format="%.2f")
-                start_year = st.number_input("Career Start Year", min_value=1950, max_value=datetime.now().year, value=2010)
-                end_year = st.number_input("Career End Year (Current year if active)", min_value=1950, max_value=datetime.now().year, value=datetime.now().year)
+                economy = st.number_input("Economy Rate", min_value=0.0, format="%.2f")
+                strike_rate = st.number_input("Bowling Strike Rate", min_value=0.0, format="%.2f")
+                start_year = st.number_input("Career Start Year", min_value=1950, max_value=datetime.now().year)
+                end_year = st.number_input("Career End Year (Current year if active)", min_value=1950, max_value=datetime.now().year)
                 st.markdown("</div></div>", unsafe_allow_html=True)
             
         career_length = end_year - start_year + 1
