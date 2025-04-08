@@ -901,8 +901,8 @@ with tab2:
                 st.error(f"Could not create comparison visualization: {e}")
             
         st.markdown("</div>", unsafe_allow_html=True)
-        
-        # Recommendations section with animation delay
+
+    # Recommendations section with animation delay
         st.markdown("""
         <div class="animated-section" style="animation-delay: 0.6s;">
             <div class='report-header'>Recommendations</div>
@@ -910,7 +910,9 @@ with tab2:
         """, unsafe_allow_html=True)
         
         st.markdown("<div class='report-body'>", unsafe_allow_html=True)
-        
+
+
+
         if player_type == "Batsman":
             prediction = analysis_results['prediction'].lower()
             
