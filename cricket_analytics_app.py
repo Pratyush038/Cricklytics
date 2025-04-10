@@ -235,14 +235,14 @@ st.markdown(tab_style, unsafe_allow_html=True)
 
 # App Header with animation effect
 def display_header():
-    st.markdown("<h1 class='main-header'>🏏 Cricket Analytics Platform</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 class='main-header'>🏏Cricklytics</h1>", unsafe_allow_html=True)
     
     # Add a subheading with animation
     st.markdown(
         """
         <div style="text-align: center; animation: fadeIn 1.5s ease-in-out; margin-bottom: 1.5rem;">
             <p style="font-size: 1.2rem; color: #4B5563;">
-                Comprehensive cricket analytics combining player performance and workload analysis
+                Analyze cricket player performance with AI-powered insights from pre-trained models — including a specialized injury prediction engine trained on player workload, match analytics, and recent form.
             </p>
         </div>
         """, 
