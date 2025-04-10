@@ -19,7 +19,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom CSS with improved container styling and animations (from cricket_analytics_app.py)
+# Custom CSS with improved container styling and animations 
 st.markdown("""
 <style>
     /* Apply system font stack to all elements */
