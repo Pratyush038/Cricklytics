@@ -1409,7 +1409,6 @@ elif app_mode == "Workload & Injury Analysis":
         
         The system will calculate missing metrics if not provided.
         """)
-
 # Improved footer with animation
 st.markdown("---")
 st.markdown("""
