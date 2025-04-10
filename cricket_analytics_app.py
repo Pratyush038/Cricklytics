@@ -583,17 +583,21 @@ def create_player_visualization(player_data, player_type):
             strike_rate_normalized
         ]
         
+        # Create a polar subplot
+        fig, ax = plt.subplots(figsize=(6, 6), subplot_kw={'projection': 'polar'})
+
         # Create the radar chart
-        angles = np.linspace(0, 2*np.pi, len(categories), endpoint=False).tolist()
+        angles = np.linspace(0, 2 * np.pi, len(categories), endpoint=False).tolist()
         values += values[:1]  # Close the polygon
-        angles += angles[:1]  # Close the polygon
-        
-        ax.plot(angles, values, linewidth=2.5, linestyle='solid', color=colors[1])
-        ax.fill(angles, values, alpha=0.4, color=colors[3])
-        
-        # Improve radar chart styling
+        angles += angles[:1]
+
+        ax.plot(angles, values, linewidth=2.5, linestyle='solid', color=colors[0])
+        ax.fill(angles, values, alpha=0.4, color=colors[2])
+
+        # Axis labels
         ax.set_xticks(angles[:-1])
-        ax.set_xticklabels(categories, fontsize=11, fontweight='bold')
+        ax.set_xticklabels(categories, fontsize=9, fontweight='bold')
+        
         ax.set_title(f"Bowling Performance - {player_data['name']}", fontsize=14, fontweight='bold', pad=20)
         
         # Add grid lines
