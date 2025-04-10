@@ -597,7 +597,7 @@ def create_player_visualization(player_data, player_type):
         # Axis labels
         ax.set_xticks(angles[:-1])
         ax.set_xticklabels(categories, fontsize=9, fontweight='bold')
-        
+
         ax.set_title(f"Bowling Performance - {player_data['name']}", fontsize=14, fontweight='bold', pad=20)
         
         # Add grid lines
@@ -1055,6 +1055,26 @@ with tab2:
                 mime="text/csv",
                 use_container_width=True
             )
+        # Add a screenshot export button using html2canvas
+        st.markdown("""
+            <hr>
+            <h4>Export Report</h4>
+            <button id="screenshot-btn">Download Screenshot</button>
+
+            <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+            <script>
+                const button = document.getElementById('screenshot-btn');
+                button.onclick = function() {
+                    html2canvas(document.body).then(function(canvas) {
+                        var link = document.createElement('a');
+                        link.download = 'player_analysis.png';
+                        link.href = canvas.toDataURL();
+                        link.click();
+                    });
+                };
+            </script>
+        """, unsafe_allow_html=True)
+
     else:
         # More attractive placeholder when no analysis has been done
         st.markdown("""
