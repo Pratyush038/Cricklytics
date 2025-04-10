@@ -1,28 +1,39 @@
 import streamlit as st
 import pandas as pd
-import pickle
-import os
 import numpy as np
-import joblib
-from datetime import datetime
 import matplotlib.pyplot as plt
 import seaborn as sns
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from datetime import datetime
+import time
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.neural_network import MLPClassifier
-import time
-import streamlit.components.v1 as components
 
+# Set page config
 st.set_page_config(
-    page_title="Cricklytics",
+    page_title="Cricket Analytics Platform",
     page_icon="🏏",
     layout="wide"
 )
 
-# Custom CSS with improved container styling and animations
+# Custom CSS with improved container styling and animations (from cricket_analytics_app.py)
 st.markdown("""
 <style>
+    /* Apply system font stack to all elements */
+    body, .stApp, .stApp * {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif !important;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
     /* Main styling and typography */
+    * {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+    
     .main-header {
         font-size: 2.5rem;
         font-weight: 700;
@@ -30,6 +41,7 @@ st.markdown("""
         text-align: center;
         margin-bottom: 1rem;
         animation: fadeIn 1s ease-in-out;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     }
     
     .sub-header {
@@ -38,27 +50,29 @@ st.markdown("""
         color: #2563EB;
         margin-bottom: 0.8rem;
         padding-top: 0.5rem;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     }
     
     /* Card styling with proper padding and overflow control */
     .card {
-        background-color: #F3F4F6;
-        border-radius: 0.5rem;
+        background-color: white;
+        border-radius: 0.8rem;
         padding: 1.2rem;
         margin-bottom: 1.5rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         overflow: hidden;
         word-wrap: break-word;
+        border: 1px solid #E2E8F0;
     }
     
     .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
     }
     
     .card-content {
-        padding: 0.8rem;
+        padding: 0.5rem;
         overflow: hidden;
         word-wrap: break-word;
     }
@@ -72,6 +86,9 @@ st.markdown("""
         font-weight: 600;
         font-size: 1.2rem;
         transition: background-color 0.3s ease;
+        margin-bottom: 0;
+        border: none;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     }
     
     .report-header:hover {
@@ -80,12 +97,14 @@ st.markdown("""
     
     .report-body {
         background-color: white;
-        padding: 1.8rem;
+        padding: 1.2rem 1.5rem;
         border-radius: 0 0 0.5rem 0.5rem;
         border: 1px solid #E5E7EB;
+        border-top: none;
         overflow: hidden;
         word-wrap: break-word;
         margin-bottom: 2rem;
+        margin-top: 0;
     }
     
     /* Model info card */
@@ -135,6 +154,35 @@ st.markdown("""
         overflow: auto;
     }
     
+    /* Put all content in white boxes */
+    .stMarkdown p, .stMarkdown h3, .stMarkdown ul, .stMarkdown ol {
+        background-color: white;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        margin-bottom: 0.5rem;
+        border: 1px solid #E5E7EB;
+    }
+    
+    /* Style form inputs */
+    div.stNumberInput, div.stTextInput, div.stSlider, div.stSelectbox, div.stMultiSelect {
+        background-color: white;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 0.5rem;
+        border: 1px solid #E5E7EB;
+    }
+    
+    /* Fix container backgrounds */
+    .stApp {
+        background-color: #f1f5f9;
+    }
+    
+    div.block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        max-width: 95%;
+    }
+    
     /* Fix for text overflow in all containers */
     div[data-testid="stVerticalBlock"] {
         word-wrap: break-word;
@@ -164,16 +212,37 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Custom tab styling with animation
+tab_style = """
+<style>
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        transition: background-color 0.3s ease, color 0.3s ease;
+        border-radius: 4px 4px 0 0;
+        padding: 8px 16px;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background-color: #1E3A8A !important;
+        color: white !important;
+    }
+</style>
+"""
+st.markdown(tab_style, unsafe_allow_html=True)
+
 # App Header with animation effect
 def display_header():
-    st.markdown("<h1 class='main-header'>🏏 Cricklytics</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 class='main-header'>🏏 Cricket Analytics Platform</h1>", unsafe_allow_html=True)
     
     # Add a subheading with animation
     st.markdown(
         """
         <div style="text-align: center; animation: fadeIn 1.5s ease-in-out; margin-bottom: 1.5rem;">
             <p style="font-size: 1.2rem; color: #4B5563;">
-                Analyze cricket player performance with AI-powered insights from pre-trained models
+                Comprehensive cricket analytics combining player performance and workload analysis
             </p>
         </div>
         """, 
@@ -182,7 +251,10 @@ def display_header():
 
 display_header()
 
-# Hardcoded model functionality
+#---------------------------------------------------------------------------
+# Player Classification Functions (from cricket_analytics_app.py)
+#---------------------------------------------------------------------------
+
 def classify_batter(player_data):
     """
     Classify a new batter based on the hardcoded model logic
@@ -289,121 +361,9 @@ def classify_bowler(player_data):
     
     return f"{experience} {style}"
 
-# Sidebar for model selection with improved styling
-with st.sidebar:
-    st.markdown("<h2 class='sub-header'>Player Category</h2>", unsafe_allow_html=True)
-    
-    model_category = st.radio("Select Player Category", ["Batsman", "Bowler"])
-    
-    st.markdown("<div class='model-info'>", unsafe_allow_html=True)
-    st.markdown("#### Pre-trained Model Info")
-    if model_category == "Batsman":
-        st.write("Using integrated batting analysis model")
-        st.write("- Features: matches, runs, strike rate, average, boundary %, career span")
-        st.write("- Categories: Elite, Anchor, Power Hitter, Finisher, etc.")
-    else:
-        st.write("Using integrated bowling analysis model")
-        st.write("- Features: matches, wickets, economy, strike rate, career span")
-        st.write("- Categories: Elite, Wicket Taker, Economist, etc.")
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    st.divider()
-    st.markdown("### About")
-    st.write("This app uses machine learning to analyze cricket player stats and generate performance insights.")
-
-# Custom tab styling with animation
-tab_style = """
-<style>
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-    }
-    
-    .stTabs [data-baseweb="tab"] {
-        transition: background-color 0.3s ease, color 0.3s ease;
-        border-radius: 4px 4px 0 0;
-        padding: 8px 16px;
-    }
-    
-    .stTabs [aria-selected="true"] {
-        background-color: #1E3A8A !important;
-        color: white !important;
-    }
-</style>
-"""
-st.markdown(tab_style, unsafe_allow_html=True)
-
-# Main app content with improved tabs
-tab1, tab2 = st.tabs(["Player Analysis", "Results"])
-
-with tab1:
-    st.markdown("<h2 class='sub-header'>Player Statistics Input</h2>", unsafe_allow_html=True)
-    
-    if model_category == "Batsman":
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            with st.container():
-                st.markdown("<div class='card'>", unsafe_allow_html=True)
-                st.markdown("<div class='card-content'>", unsafe_allow_html=True)
-                player_name = st.text_input("Player Name")
-                matches = st.number_input("Matches Played", min_value=1, value=50)
-                runs = st.number_input("Total Runs", min_value=0, value=1500)
-                strike_rate = st.number_input("Strike Rate", min_value=0.0, value=135.0, format="%.2f")
-                st.markdown("</div></div>", unsafe_allow_html=True)
-        
-        with col2:
-            with st.container():
-                st.markdown("<div class='card'>", unsafe_allow_html=True)
-                st.markdown("<div class='card-content'>", unsafe_allow_html=True)
-                average = st.number_input("Batting Average", min_value=0.0, value=35.0, format="%.2f")
-                boundary_percent = st.slider("Boundary Percentage", 0.0, 100.0, 50.0, format="%.1f")
-                start_year = st.number_input("Career Start Year", min_value=1950, max_value=datetime.now().year, value=2010)
-                end_year = st.number_input("Career End Year (Current year if active)", min_value=1950, max_value=datetime.now().year, value=datetime.now().year)
-                st.markdown("</div></div>", unsafe_allow_html=True)
-            
-        career_length = end_year - start_year + 1
-            
-    elif model_category == "Bowler":
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            with st.container():
-                st.markdown("<div class='card'>", unsafe_allow_html=True)
-                st.markdown("<div class='card-content'>", unsafe_allow_html=True)
-                player_name = st.text_input("Player Name")
-                matches = st.number_input("Matches Played", min_value=1, value=50)
-                wickets = st.number_input("Total Wickets", min_value=0, value=75)
-                st.markdown("</div></div>", unsafe_allow_html=True)
-        
-        with col2:
-            with st.container():
-                st.markdown("<div class='card'>", unsafe_allow_html=True)
-                st.markdown("<div class='card-content'>", unsafe_allow_html=True)
-                economy = st.number_input("Economy Rate", min_value=0.0, value=4.5, format="%.2f")
-                strike_rate = st.number_input("Bowling Strike Rate", min_value=0.0, value=30.0, format="%.2f")
-                start_year = st.number_input("Career Start Year", min_value=1950, max_value=datetime.now().year, value=2010)
-                end_year = st.number_input("Career End Year (Current year if active)", min_value=1950, max_value=datetime.now().year, value=datetime.now().year)
-                st.markdown("</div></div>", unsafe_allow_html=True)
-            
-        career_length = end_year - start_year + 1
-    
-    # Add a visual separator before the button
-    st.markdown("""
-    <div style="height: 1px; background-color: #E5E7EB; margin: 1rem 0;"></div>
-    """, unsafe_allow_html=True)
-    
-    # Improved button with animation
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        analyze_button = st.button("Generate Analysis Report", type="primary", use_container_width=True)
-
-# Function to generate analysis based on player data
+# Function to generate insights and analysis for player
 def generate_analysis(player_data, player_type):
     try:
-        # Add a small delay for animation effect
-        with st.spinner("Analyzing player data..."):
-            time.sleep(0.8)
-            
         # Classification based on model type
         if player_type == "Batsman":
             prediction = classify_batter(player_data)
@@ -698,7 +658,8 @@ def create_player_comparison(player_data, player_type):
         # Set x positions and width
         x = np.arange(len(metrics))
         width = 0.15
-# Plot bars with improved styling
+        
+        # Plot bars with improved styling
         for i, (role, values) in enumerate(reference_data.items()):
             offset = width * (i - len(reference_data)/2 + 0.5)
             values_list = [values[m] for m in metrics]
@@ -738,364 +699,716 @@ def create_player_comparison(player_data, player_type):
     plt.tight_layout()
     return fig
 
-# Process analysis if button is clicked
-if 'analyzed' not in st.session_state:
-    st.session_state.analyzed = False
+#---------------------------------------------------------------------------
+# Workload Analysis Functions (from workload_analysis.py)
+#---------------------------------------------------------------------------
 
-if analyze_button:
-    # Show a progress bar for visual feedback
-    progress_bar = st.progress(0)
+def load_player_data(file, player_name):
+    if file is not None:
+        df = pd.read_csv(file)
+        
+        # Convert date column if it exists
+        date_columns = [col for col in df.columns if 'date' in col.lower() or 'day' in col.lower()]
+        if date_columns:
+            for date_col in date_columns:
+                try:
+                    df[date_col] = pd.to_datetime(df[date_col])
+                except:
+                    pass
+                    
+        # Add player identifier
+        df['Player'] = player_name
+        return df
+    return None
+
+def ensure_fatigue_metrics(df):
+    # If these metrics already exist, keep them
+    # Otherwise, calculate them based on available data
     
-    # Simulate processing steps with animation
-    for percent_complete in range(101):
-        time.sleep(0.01)  # Small delay for animation effect
-        progress_bar.progress(percent_complete)
+    if 'Bowling_Intensity' not in df.columns and all(col in df.columns for col in ['Overs', 'Runs', 'Wick']):
+        df['Bowling_Intensity'] = (
+            (df['Overs'] * 6) +
+            (df['Runs'] * 2) +
+            (df['Wick'] * 20)
+        )
     
-    # Prepare player data
-    if model_category == "Batsman":
-        player_data = {
-            "name": player_name if player_name else "Unnamed Batsman",
-            "mat": matches,
-            "runs": runs,
-            "sr": strike_rate,
-            "avg": average,
-            "boundary_pct": boundary_percent,
-            "career_length": career_length
-        }
-    else:  # Bowler
-        player_data = {
-            "name": player_name if player_name else "Unnamed Bowler",
-            "mat": matches,
-            "wickets": wickets,
-            "econ": economy,
-            "sr": strike_rate,
-            "career_length": career_length
-        }
+    # Check for match date column
+    date_col = None
+    for col in df.columns:
+        if 'date' in col.lower() or 'day' in col.lower():
+            if pd.api.types.is_datetime64_any_dtype(df[col]):
+                date_col = col
+                break
     
-    # Generate analysis
-    st.session_state.analysis_results = generate_analysis(player_data, model_category)
-    st.session_state.player_data = player_data
-    st.session_state.player_type = model_category
-    st.session_state.analyzed = True
+    # Calculate days since last match if date column exists
+    if date_col and 'Days_Since_Last_Match' not in df.columns:
+        df = df.sort_values(by=date_col)
+        df['Days_Since_Last_Match'] = df.groupby('Player')[date_col].diff().dt.days.fillna(0)
     
-    # Clear the progress bar
-    progress_bar.empty()
+    # Calculate cumulative workload if not already present
+    if 'Cumulative_Workload' not in df.columns and 'Bowling_Intensity' in df.columns:
+        df['Cumulative_Workload'] = df.groupby('Player')['Bowling_Intensity'].rolling(window=3, min_periods=1).mean().reset_index(0, drop=True)
     
-    # Display a success message with animation
-    st.success("Analysis completed successfully!")
-    time.sleep(0.5)  # Brief pause
+    # Calculate workload variance if not already present
+    if 'Workload_Variance' not in df.columns and 'Bowling_Intensity' in df.columns:
+        df['Workload_Variance'] = df.groupby('Player')['Bowling_Intensity'].rolling(window=3, min_periods=1).std().reset_index(0, drop=True).fillna(0)
     
-    # Switch to Results tab
-    st.rerun()
+    return df
 
-with tab2:
-    if st.session_state.get('analyzed', False):
-        player_data = st.session_state.player_data
-        analysis_results = st.session_state.analysis_results
-        player_type = st.session_state.player_type
+#---------------------------------------------------------------------------
+# Main Application
+#---------------------------------------------------------------------------
 
-        # CSS Styling and Animation
-        st.markdown("""
-        <style>
-            @keyframes slideIn {
-                0% { opacity: 0; transform: translateY(20px); }
-                100% { opacity: 1; transform: translateY(0); }
-            }
+# Sidebar for navigation
+with st.sidebar:
+    st.markdown("<h2 class='sub-header'>Navigation</h2>", unsafe_allow_html=True)
+    
+    # App features selection
+    app_mode = st.radio(
+        "Select Analysis Type",
+        ["Player Performance Analysis", "Workload & Injury Analysis"]
+    )
+    
+    st.divider()
+    
+    # Conditional display based on selected mode
+    if app_mode == "Player Performance Analysis":
+        st.markdown("<h2 class='sub-header'>Player Category</h2>", unsafe_allow_html=True)
+        
+        model_category = st.radio("Select Player Category", ["Batsman", "Bowler"])
+        
+        st.markdown("<div class='model-info'>", unsafe_allow_html=True)
+        st.markdown("#### Pre-trained Model Info")
+        if model_category == "Batsman":
+            st.write("Using integrated batting analysis model")
+            st.write("- Features: matches, runs, strike rate, average, boundary %, career span")
+            st.write("- Categories: Elite, Anchor, Power Hitter, Finisher, etc.")
+        else:
+            st.write("Using integrated bowling analysis model")
+            st.write("- Features: matches, wickets, economy, strike rate, career span")
+            st.write("- Categories: Elite, Wicket Taker, Economist, etc.")
+        st.markdown("</div>", unsafe_allow_html=True)
+    
+    else:  # Workload & Injury Analysis
+        st.markdown("<h2 class='sub-header'>Upload Player Data</h2>", unsafe_allow_html=True)
+        
+        player1_file = st.file_uploader("Upload Player 1 Data (CSV)", type=['csv'])
+        player2_file = st.file_uploader("Upload Player 2 Data (CSV)", type=['csv'])
+        player3_file = st.file_uploader("Upload Player 3 Data (CSV)", type=['csv'])
+        
+        st.markdown("<div class='model-info'>", unsafe_allow_html=True)
+        st.markdown("#### Workload Analysis Info")
+        st.write("Upload CSV files with player match data")
+        st.write("- Required columns: matches, dates, workload metrics")
+        st.write("- Optional: overs, runs, wickets for intensity calculation")
+        st.markdown("</div>", unsafe_allow_html=True)
+    
+    st.divider()
+    
+    st.markdown("### About")
+    st.write("This platform combines player performance analysis and workload monitoring to provide comprehensive cricket analytics.")
 
-            .animated-section {
-                animation: slideIn 0.6s ease-out forwards;
-                margin-bottom: 1.5rem;
-            }
+#---------------------------------------------------------------------------
+# Player Performance Analysis Mode
+#---------------------------------------------------------------------------
 
-            .report-card {
-                background-color: #1f2937;  /* dark background for contrast */
-                border-radius: 10px;
-                padding: 1.5rem;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-                margin-bottom: 2rem;
-                color: #f9fafb;
-            }
-
-            .report-header {
-                font-size: 1.25rem;
-                font-weight: bold;
-                color: #3B82F6;
-                margin-bottom: 1rem;
-            }
-
-            .recommendation-item {
-                font-size: 1rem;
-                padding: 0.25rem 0;
-            }
-
-            h3 {
-                margin-top: 0;
-                color: #93c5fd;
-            }
-        </style>
-        """, unsafe_allow_html=True)
-
-        # Header
-        st.markdown("<div class='animated-section'><h2 class='sub-header'>Player Analysis Results</h2></div>", unsafe_allow_html=True)
-
-        # Player Info Card
-        st.markdown("<div class='animated-section report-card'>", unsafe_allow_html=True)
-        st.markdown("<div class='report-header'>Player Information</div>", unsafe_allow_html=True)
-
+if app_mode == "Player Performance Analysis":
+    # Initialize session state variables if not exist
+    if 'analyzed' not in st.session_state:
+        st.session_state.analyzed = False
+    
+    # Create tabs for player analysis
+    analysis_tab1, analysis_tab2 = st.tabs(["Player Analysis", "Results"])
+    
+    with analysis_tab1:
+        # Create a unified form with proper styling for player stats input
+        st.markdown("<div class='report-card'>", unsafe_allow_html=True)
+        st.markdown("<div class='report-header'>Player Statistics Input</div><div class='report-body' style='padding: 1.5rem;'>", unsafe_allow_html=True)
+        
+        if model_category == "Batsman":
+            player_name = st.text_input("Player Name")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                matches = st.number_input("Matches Played", min_value=1, value=50)
+            with col2:
+                runs = st.number_input("Total Runs", min_value=0, value=1500)
+            
+            col3, col4 = st.columns(2)
+            with col3:
+                average = st.number_input("Batting Average", min_value=0.0, value=35.0, format="%.2f")
+            with col4:
+                strike_rate = st.number_input("Strike Rate", min_value=0.0, value=135.0, format="%.2f")
+            
+            col5, col6 = st.columns(2)
+            with col5:
+                fours = st.number_input("Number of Fours", min_value=0, value=120)
+            with col6:
+                sixes = st.number_input("Number of Sixes", min_value=0, value=45)
+            
+            col7, col8 = st.columns(2)
+            with col7:
+                start_year = st.number_input("Career Start Year", min_value=1950, max_value=datetime.now().year, value=2010)
+            with col8:
+                end_year = st.number_input("Career End Year (Current year if active)", min_value=1950, max_value=datetime.now().year, value=datetime.now().year)
+            
+            # Calculate boundary percentage automatically
+            boundary_pct = ((4 * fours + 6 * sixes) / runs) * 100 if runs > 0 else 0
+                
+            career_length = end_year - start_year + 1
+                
+        elif model_category == "Bowler":
+            player_name = st.text_input("Player Name")
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                matches = st.number_input("Matches Played", min_value=1, value=50)
+                wickets = st.number_input("Total Wickets", min_value=0, value=75)
+                economy = st.number_input("Economy Rate", min_value=0.0, value=4.5, format="%.2f")
+                
+            with col2:
+                strike_rate = st.number_input("Bowling Strike Rate", min_value=0.0, value=20.0, format="%.2f")
+                start_year = st.number_input("Career Start Year", min_value=1950, max_value=datetime.now().year, value=2010)
+                end_year = st.number_input("Career End Year (Current year if active)", min_value=1950, max_value=datetime.now().year, value=datetime.now().year)
+                
+            career_length = end_year - start_year + 1
+            
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        
         col1, col2 = st.columns(2)
         with col1:
-            st.markdown(f"**Name:** {player_data['name']}")
-            st.markdown(f"**Player Type:** {player_type}")
-            st.markdown(f"**Career Span:** {player_data['career_length']} years")
+            analyze_button = st.button("Analyze Player", use_container_width=True)
         with col2:
-            if player_type == "Batsman":
-                st.markdown(f"**Matches:** {player_data['mat']}")
-                st.markdown(f"**Runs:** {player_data['runs']}")
-                st.markdown(f"**Average:** {player_data['avg']}")
-                st.markdown(f"**Strike Rate:** {player_data['sr']}")
-                st.markdown(f"**Boundary %:** {player_data['boundary_pct']}%")
-            else:
-                st.markdown(f"**Matches:** {player_data['mat']}")
-                st.markdown(f"**Wickets:** {player_data['wickets']}")
-                st.markdown(f"**Economy:** {player_data['econ']}")
-                st.markdown(f"**Strike Rate:** {player_data['sr']}")
-        st.markdown("</div>", unsafe_allow_html=True)
+            clear_button = st.button("Clear Data", use_container_width=True)
+    
+        # Process analysis if button is clicked
+        if analyze_button:
+            # Show a progress bar for visual feedback
+            progress_bar = st.progress(0)
+            
+            # Simulate processing steps with animation
+            for percent_complete in range(101):
+                time.sleep(0.01)  # Small delay for animation effect
+                progress_bar.progress(percent_complete)
+            
+            # Prepare player data
+            if model_category == "Batsman":
+                player_data = {
+                    "name": player_name if player_name else "Unnamed Batsman",
+                    "mat": matches,
+                    "runs": runs,
+                    "sr": strike_rate,
+                    "avg": average,
+                    "boundary_pct": boundary_pct,
+                    "fours": fours,
+                    "sixes": sixes,
+                    "career_length": career_length
+                }
+            else:  # Bowler
+                player_data = {
+                    "name": player_name if player_name else "Unnamed Bowler",
+                    "mat": matches,
+                    "wickets": wickets,
+                    "econ": economy,
+                    "sr": strike_rate,
+                    "career_length": career_length
+                }
+            
+            # Generate analysis
+            st.session_state.analysis_results = generate_analysis(player_data, model_category)
+            st.session_state.player_data = player_data
+            st.session_state.player_type = model_category
+            st.session_state.analyzed = True
+            
+            # Clear the progress bar
+            progress_bar.empty()
+            
+            # Display a success message with animation
+            st.success("Analysis completed successfully!")
+            time.sleep(0.5)  # Brief pause
+            
+            # Switch to Results tab
+            st.rerun()
+    
+    with analysis_tab2:
+        if st.session_state.get('analyzed', False):
+            player_data = st.session_state.player_data
+            analysis_results = st.session_state.analysis_results
+            player_type = st.session_state.player_type
 
-        # AI Analysis Block
-        st.markdown("<div class='animated-section report-card'>", unsafe_allow_html=True)
-        st.markdown("<div class='report-header'>AI Analysis</div>", unsafe_allow_html=True)
+            # CSS for animations only - we already defined card styles in the main CSS
+            st.markdown("""
+            <style>
+                @keyframes slideIn {
+                    0% { opacity: 0; transform: translateY(20px); }
+                    100% { opacity: 1; transform: translateY(0); }
+                }
 
-        # Classification Box
-        st.markdown(f"""
-        <h3>Player Classification</h3>
-        <div style="background-color:#EFF6FF; padding:1rem; border-left:4px solid #3B82F6; 
-                    margin-bottom:1.5rem; border-radius:0.25rem; color:#1E3A8A; font-weight:600;">
-            {analysis_results['prediction']}
-        </div>
-        """, unsafe_allow_html=True)
+                .animated-section {
+                    animation: slideIn 0.6s ease-out forwards;
+                    margin-bottom: 1.5rem;
+                }
 
-        # Key Insights
-        st.subheader("Key Insights")
-        for i, insight in enumerate(analysis_results['insights']):
+                .recommendation-item {
+                    font-size: 1rem;
+                    padding: 0.25rem 0;
+                }
+
+                h3 {
+                    margin-top: 0;
+                    color: #1E3A8A;
+                }
+            </style>
+            """, unsafe_allow_html=True)
+
+            # Header
+            st.markdown("<div class='animated-section'><h2 class='sub-header'>Player Analysis Results</h2></div>", unsafe_allow_html=True)
+
+            # Player Info Card
+            st.markdown("<div class='animated-section report-card'>", unsafe_allow_html=True)
+            st.markdown("<div class='report-header'>Player Information</div><div class='report-body' style='padding: 1.5rem;'>", unsafe_allow_html=True)
+
+            # Custom CSS for better alignment
+            st.markdown("""
+            <style>
+            .player-stat {
+                display: flex;
+                margin-bottom: 8px;
+                align-items: center;
+            }
+            .stat-label {
+                font-weight: bold;
+                min-width: 120px;
+                display: inline-block;
+            }
+            .stat-value {
+                flex-grow: 1;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown(f"""<div class="player-stat">
+                    <span class="stat-label">Name:</span> 
+                    <span class="stat-value">{player_data['name']}</span>
+                </div>""", unsafe_allow_html=True)
+                
+                st.markdown(f"""<div class="player-stat">
+                    <span class="stat-label">Player Type:</span>
+                    <span class="stat-value">{player_type}</span>
+                </div>""", unsafe_allow_html=True)
+                
+                st.markdown(f"""<div class="player-stat">
+                    <span class="stat-label">Career Span:</span>
+                    <span class="stat-value">{player_data['career_length']} years</span>
+                </div>""", unsafe_allow_html=True)
+            
+            with col2:
+                if player_type == "Batsman":
+                    st.markdown(f"""<div class="player-stat">
+                        <span class="stat-label">Matches:</span>
+                        <span class="stat-value">{player_data['mat']}</span>
+                    </div>""", unsafe_allow_html=True)
+                    
+                    st.markdown(f"""<div class="player-stat">
+                        <span class="stat-label">Runs:</span>
+                        <span class="stat-value">{player_data['runs']}</span>
+                    </div>""", unsafe_allow_html=True)
+                    
+                    st.markdown(f"""<div class="player-stat">
+                        <span class="stat-label">Average:</span>
+                        <span class="stat-value">{player_data['avg']}</span>
+                    </div>""", unsafe_allow_html=True)
+                    
+                    st.markdown(f"""<div class="player-stat">
+                        <span class="stat-label">Strike Rate:</span>
+                        <span class="stat-value">{player_data['sr']}</span>
+                    </div>""", unsafe_allow_html=True)
+                    
+                    st.markdown(f"""<div class="player-stat">
+                        <span class="stat-label">Boundary %:</span>
+                        <span class="stat-value">{player_data['boundary_pct']:.2f}%</span>
+                    </div>""", unsafe_allow_html=True)
+                else:
+                    st.markdown(f"""<div class="player-stat">
+                        <span class="stat-label">Matches:</span>
+                        <span class="stat-value">{player_data['mat']}</span>
+                    </div>""", unsafe_allow_html=True)
+                    
+                    st.markdown(f"""<div class="player-stat">
+                        <span class="stat-label">Wickets:</span>
+                        <span class="stat-value">{player_data['wickets']}</span>
+                    </div>""", unsafe_allow_html=True)
+                    
+                    st.markdown(f"""<div class="player-stat">
+                        <span class="stat-label">Economy:</span>
+                        <span class="stat-value">{player_data['econ']}</span>
+                    </div>""", unsafe_allow_html=True)
+                    
+                    st.markdown(f"""<div class="player-stat">
+                        <span class="stat-label">Strike Rate:</span>
+                        <span class="stat-value">{player_data['sr']}</span>
+                    </div>""", unsafe_allow_html=True)
+            
+            # Add space below player information
+            st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
+            st.markdown("</div></div>", unsafe_allow_html=True)
+
+            # AI Analysis Block
+            st.markdown("<div class='animated-section report-card'>", unsafe_allow_html=True)
+            st.markdown("<div class='report-header'>AI Analysis</div>", unsafe_allow_html=True)
+
+            # Classification Box
             st.markdown(f"""
-            <div class="recommendation-item" style="animation: fadeIn {0.6 + i*0.1}s ease-in-out;">
-                • {insight}
+            <h3>Player Classification</h3>
+            <div style="background-color:#EFF6FF; padding:1rem; border-left:4px solid #3B82F6; 
+                        margin-bottom:1.5rem; border-radius:0.25rem; color:#1E3A8A; font-weight:600;">
+                {analysis_results['prediction']}
             </div>
             """, unsafe_allow_html=True)
 
-        st.markdown("</div>", unsafe_allow_html=True)
-
-            
-        # Visualization with improved layout
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.subheader("Performance Radar")
-            try:
-                fig1 = create_player_visualization(player_data, player_type)
-                st.pyplot(fig1)
-            except Exception as e:
-                st.error(f"Could not create radar visualization: {e}")
-        
-        with col2:
-            st.subheader("Player Comparison")
-            try:
-                fig2 = create_player_comparison(player_data, player_type)
-                st.pyplot(fig2)
-            except Exception as e:
-                st.error(f"Could not create comparison visualization: {e}")
-            
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    # Recommendations section with animation delay
-        st.markdown("""
-        <div class="animated-section" style="animation-delay: 0.6s;">
-            <div class='report-header'>Recommendations</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("<div class='report-body'>", unsafe_allow_html=True)
-
-
-
-        if player_type == "Batsman":
-            prediction = analysis_results['prediction'].lower()
-            
-            recommendations = []
-            # Based on player classification
-            if "elite" in prediction:
-                recommendations = [
-                    "Continue with the current approach - excellent performance metrics",
-                    "Focus on maintaining consistency across different match conditions",
-                    "Consider mentoring younger players to share expertise"
-                ]
-            elif "anchor" in prediction:
-                if "inexperienced" in prediction:
-                    recommendations = [
-                        "Work on building innings against different bowling types",
-                        "Focus on rotating strike more effectively in middle overs",
-                        "Develop power-hitting skills for late innings acceleration"
-                    ]
-                else:
-                    recommendations = [
-                        "Continue to leverage experience while building partnerships",
-                        "Work on tactical aspects against specific bowling types",
-                        "Consider improving strike rotation in middle overs"
-                    ]
-            elif "power" in prediction:
-                if "inexperienced" in prediction:
-                    recommendations = [
-                        "Work on consistency while maintaining aggressive approach",
-                        "Develop technique against quality bowling attacks",
-                        "Practice situational batting for different match scenarios"
-                    ]
-                else:
-                    recommendations = [
-                        "Continue leveraging power-hitting abilities in appropriate situations",
-                        "Work on improving shot selection against specific bowlers",
-                        "Consider adding more variety to attacking options"
-                    ]
-            elif "finisher" in prediction:
-                if "inexperienced" in prediction:
-                    recommendations = [
-                        "Develop composure in high-pressure situations",
-                        "Practice specific end-game scenarios",
-                        "Work on identifying bowlers' variations in death overs"
-                    ]
-                else:
-                    recommendations = [
-                        "Continue utilizing experience in pressure situations",
-                        "Consider expanding range of shots for specific match situations",
-                        "Work on partnership building in run chases"
-                    ]
-            else:
-                recommendations = [
-                    "Focus on technical refinement for improved consistency",
-                    "Work on specific match scenarios to improve decision making",
-                    "Develop a more defined batting identity based on strengths"
-                ]
-                
-            # Display recommendations with animations
-            for i, rec in enumerate(recommendations):
+            # Key Insights
+            st.subheader("Key Insights")
+            for i, insight in enumerate(analysis_results['insights']):
                 st.markdown(f"""
-                <div class="recommendation-item" style="animation: fadeIn {0.8 + i*0.15}s ease-in-out;">
-                    <span style="color:#2563EB; font-weight:600;">•</span> {rec}
+                <div class="recommendation-item" style="animation: fadeIn {0.6 + i*0.1}s ease-in-out;">
+                    • {insight}
                 </div>
                 """, unsafe_allow_html=True)
+
+            st.markdown("</div>", unsafe_allow_html=True)
+
                 
-        else:  # Bowler
-            prediction = analysis_results['prediction'].lower()
+            # Visualization with improved layout
+            col1, col2 = st.columns(2)
             
-            recommendations = []
-            if "elite" in prediction:
-                recommendations = [
-                    "Continue current approach - excellent bowling metrics",
-                    "Maintain physical conditioning to ensure longevity",
-                    "Consider developing additional variations to stay ahead of batsmen"
-                ]
-            elif "wicket taker" in prediction:
-                if "inexperienced" in prediction:
-                    recommendations = [
-                        "Work on consistency while maintaining attacking approach",
-                        "Develop better control to improve economy rate",
-                        "Focus on specific plans for different types of batsmen"
-                    ]
-                else:
-                    recommendations = [
-                        "Continue to leverage experience in setting up dismissals",
-                        "Work on improving economy rate in certain phases",
-                        "Consider adding more variations to your arsenal"
-                    ]
-            elif "economist" in prediction:
-                if "inexperienced" in prediction:
-                    recommendations = [
-                        "Maintain control while working on wicket-taking deliveries",
-                        "Develop specific variations to challenge batsmen",
-                        "Practice bowling plans for different match situations"
-                    ]
-                else:
-                    recommendations = [
-                        "Continue using experience to contain quality batsmen",
-                        "Work on developing more wicket-taking deliveries",
-                        "Consider tactical improvements for different phases of the game"
-                    ]
+            with col1:
+                st.subheader("Performance Radar")
+                try:
+                    fig1 = create_player_visualization(player_data, player_type)
+                    st.pyplot(fig1)
+                except Exception as e:
+                    st.error(f"Could not create radar visualization: {e}")
+            
+            with col2:
+                st.subheader("Player Comparison")
+                try:
+                    fig2 = create_player_comparison(player_data, player_type)
+                    st.pyplot(fig2)
+                except Exception as e:
+                    st.error(f"Could not create comparison visualization: {e}")
+            
+            # Recommendations section with animation delay
+            st.markdown("""
+            <div class="animated-section" style="animation-delay: 0.6s;">
+                <div class='report-header'>Recommendations</div>
+                <div class='report-body' style='padding: 1.5rem;'>
+            """, unsafe_allow_html=True)
+            
+            # Generate recommendations based on player type and stats
+            if player_type == "Batsman":
+                st.markdown("""
+                    ### Training Focus Areas
+                    * **Technical Drills**: Focus on improving technique against specific bowling types
+                    * **Match Scenarios**: Practice specific game situations based on your player role
+                    * **Physical Conditioning**: Targeted fitness plan for batting performance
+                    
+                    ### Performance Optimization
+                    * Continue monitoring strike rate and boundary percentage
+                    * Analyze match-ups against different bowling styles
+                    * Review footage of successful innings to identify patterns
+                """)
             else:
-                recommendations = [
-                    "Focus on technical refinement for improved consistency",
-                    "Work on specific skills like yorkers or slower balls",
-                    "Develop a more defined bowling identity based on strengths"
-                ]
+                st.markdown("""
+                    ### Training Focus Areas
+                    * **Skill Refinement**: Work on variations and consistency
+                    * **Match Scenarios**: Practice bowling in pressure situations
+                    * **Recovery Protocol**: Implement structured recovery to reduce injury risk
+                    
+                    ### Performance Optimization
+                    * Monitor economy rate across different phases
+                    * Analyze wicket-taking deliveries for patterns
+                    * Use data to identify optimal match-ups against batters
+                """)
             
-            # Display recommendations with animations
-            for i, rec in enumerate(recommendations):
-                st.markdown(f"""
-                <div class="recommendation-item" style="animation: fadeIn {0.8 + i*0.15}s ease-in-out;">
-                    <span style="color:#2563EB; font-weight:600;">•</span> {rec}
-                </div>
-                """, unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+        else:
+            st.info("Please fill player statistics and click 'Analyze Player' to view results.")
+
+#---------------------------------------------------------------------------
+# Workload & Injury Analysis Mode
+#---------------------------------------------------------------------------
+
+elif app_mode == "Workload & Injury Analysis":
+    st.markdown("<h2 class='sub-header'>Bowler Workload & Injury Prediction Analysis</h2>", unsafe_allow_html=True)
+    st.markdown("This dashboard visualizes fatigue metrics across matches and dates for bowlers.")
+    
+    # Process data
+    player1_data = load_player_data(player1_file, "Player 1")
+    player2_data = load_player_data(player2_file, "Player 2")
+    player3_data = load_player_data(player3_file, "Player 3")
+    
+    # Combine available data
+    player_dfs = [df for df in [player1_data, player2_data, player3_data] if df is not None]
+    
+    if player_dfs:
+        all_data = pd.concat(player_dfs, ignore_index=True)
+        all_data = ensure_fatigue_metrics(all_data)
+        
+        # Data is loaded, show controls in a well-designed card
+        st.markdown("<div class='report-card'>", unsafe_allow_html=True)
+        st.markdown("<div class='report-header'>Analysis Controls</div>", unsafe_allow_html=True)
+        st.markdown("<div class='report-body' style='padding: 1.5rem; background-color: #f8fafc;'>", unsafe_allow_html=True)
+        
+        available_players = all_data['Player'].unique().tolist()
+        selected_players = st.multiselect(
+            "Select Players to Display",
+            options=available_players,
+            default=available_players
+        )
+        
+        # Identify fatigue metrics
+        fatigue_metrics = []
+        for col in all_data.columns:
+            if any(term in col.lower() for term in ['fatigue', 'workload', 'intensity', 'cumulative', 'variance', 'risk']):
+                fatigue_metrics.append(col)
+        
+        # If no fatigue metrics found, suggest alternatives
+        if not fatigue_metrics:
+            numeric_cols = all_data.select_dtypes(include=['float64', 'int64']).columns.tolist()
+            for col in numeric_cols:
+                if col not in ['Player'] and not any(dim in col.lower() for dim in ['index', 'id']):
+                    fatigue_metrics.append(col)
+        
+        selected_metrics = st.multiselect(
+            "Select Fatigue Metrics to Visualize",
+            options=fatigue_metrics,
+            default=fatigue_metrics[:3] if len(fatigue_metrics) >= 3 else fatigue_metrics
+        )
+        
+        # Identify date/match columns
+        date_columns = []
+        match_columns = []
+        
+        for col in all_data.columns:
+            if any(term in col.lower() for term in ['date', 'day']):
+                if pd.api.types.is_datetime64_any_dtype(all_data[col]):
+                    date_columns.append(col)
+            if any(term in col.lower() for term in ['match', 'game', 'session']):
+                match_columns.append(col)
+        
+        # If no match column found but we have index, use that
+        if not match_columns and 'index' in all_data.columns:
+            match_columns.append('index')
+        # If still no match columns, create a simple match index
+        if not match_columns:
+            all_data['Match_Index'] = all_data.groupby('Player').cumcount() + 1
+            match_columns.append('Match_Index')
+        
+        x_axis_options = date_columns + match_columns
+        x_axis = st.selectbox(
+            "Select X-Axis (Date or Match)",
+            options=x_axis_options,
+            index=0 if date_columns else 0
+        )
+        
+        st.markdown("</div></div>", unsafe_allow_html=True)
+        
+        # Filter data based on selection
+        filtered_data = all_data[all_data['Player'].isin(selected_players)]
+        
+        # Create tabs for different visualizations
+        workload_tab1, workload_tab2, workload_tab3 = st.tabs(["Metric Trends", "Combined Metrics", "Heatmap Analysis"])
+        
+        with workload_tab1:
+            st.markdown("<h2 class='sub-header'>Fatigue Metrics over Time</h2>", unsafe_allow_html=True)
+            
+            # Line charts for selected metrics
+            for metric in selected_metrics:
+                if metric in filtered_data.columns:
+                    fig = px.line(filtered_data, x=x_axis, y=metric, color='Player',
+                                 title=f"{metric} Over {x_axis} by Player",
+                                 markers=True)
+                    
+                    # Add a horizontal line for average if numeric
+                    if pd.api.types.is_numeric_dtype(filtered_data[metric]):
+                        avg_value = filtered_data[metric].mean()
+                        fig.add_shape(
+                            type="line",
+                            line=dict(dash="dash", color="gray"),
+                            y0=avg_value, y1=avg_value,
+                            x0=0, x1=1,
+                            xref="paper"
+                        )
+                        
+                    st.plotly_chart(fig, use_container_width=True)
+            
+        with workload_tab2:
+            st.markdown("<h2 class='sub-header'>Combined Metrics Comparison</h2>", unsafe_allow_html=True)
+            
+            if len(selected_metrics) >= 2:
+                # Create subplots - one row per player
+                fig = make_subplots(
+                    rows=len(selected_players),
+                    cols=1,
+                    subplot_titles=[f"{player} - Fatigue Metrics" for player in selected_players]
+                )
                 
+                for i, player in enumerate(selected_players):
+                    player_data = filtered_data[filtered_data['Player'] == player]
+                    
+                    for j, metric in enumerate(selected_metrics):
+                        if metric in player_data.columns:
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=player_data[x_axis],
+                                    y=player_data[metric],
+                                    name=f"{player} - {metric}",
+                                    mode='lines+markers',
+                                    line=dict(dash='solid' if j % 2 == 0 else 'dash')
+                                ),
+                                row=i+1,
+                                col=1
+                            )
+                
+                fig.update_layout(height=300 * len(selected_players), showlegend=True)
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("Please select at least two metrics to see combined comparison.")
+            
+        with workload_tab3:
+            st.markdown("<h2 class='sub-header'>Fatigue Patterns Heatmap</h2>", unsafe_allow_html=True)
+            
+            if len(selected_metrics) >= 2:
+                # Create a pivot table-like structure for the heatmap
+                for player in selected_players:
+                    player_data = filtered_data[filtered_data['Player'] == player]
+                    
+                    # Convert datetime to string for heatmap if needed
+                    if pd.api.types.is_datetime64_any_dtype(player_data[x_axis]):
+                        x_values = player_data[x_axis].dt.strftime('%Y-%m-%d').values
+                    else:
+                        x_values = player_data[x_axis].values
+                        
+                    # Create heatmap data
+                    heatmap_data = []
+                    for i, metric in enumerate(selected_metrics):
+                        if metric in player_data.columns:
+                            for j, x_val in enumerate(x_values):
+                                heatmap_data.append({
+                                    'X': x_val,
+                                    'Metric': metric,
+                                    'Value': player_data.iloc[j][metric]
+                                })
+                    
+                    if heatmap_data:
+                        heatmap_df = pd.DataFrame(heatmap_data)
+                        
+                        # Create heatmap
+                        fig = px.density_heatmap(
+                            heatmap_df,
+                            x='X',
+                            y='Metric',
+                            z='Value',
+                            color_continuous_scale='Blues',
+                            title=f"Fatigue Metrics Heatmap for {player}"
+                        )
+                        
+                        fig.update_layout(
+                            xaxis_title=x_axis,
+                            yaxis_title="Metric"
+                        )
+                        
+                        st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("Please select at least two metrics to generate heatmap.")
+        
+        # Show data table with key metrics
+        st.markdown("<h2 class='sub-header'>Player Data Table</h2>", unsafe_allow_html=True)
+        display_cols = ['Player', x_axis] + selected_metrics
+        display_cols = [col for col in display_cols if col in filtered_data.columns]
+        st.dataframe(filtered_data[display_cols])
+        
+        # Injury risk assessment
+        st.markdown("<h2 class='sub-header'>Injury Risk Assessment</h2>", unsafe_allow_html=True)
+        
+        st.markdown("<div class='report-header'>Risk Analysis</div>", unsafe_allow_html=True)
+        st.markdown("<div class='report-body' style='padding: 1.5rem; background-color: #f8fafc;'>", unsafe_allow_html=True)
+        
+        for player in selected_players:
+            player_data = filtered_data[filtered_data['Player'] == player]
+            
+            if 'Cumulative_Workload' in player_data.columns or 'Bowling_Intensity' in player_data.columns:
+                # Calculate simple risk score
+                workload_metric = 'Cumulative_Workload' if 'Cumulative_Workload' in player_data.columns else 'Bowling_Intensity'
+                
+                if len(player_data) > 0:
+                    recent_workload = player_data[workload_metric].iloc[-1] if not player_data.empty else 0
+                    avg_workload = player_data[workload_metric].mean() if not player_data.empty else 0
+                    
+                    # Calculate risk score (simplified)
+                    risk_score = (recent_workload / avg_workload * 100) if avg_workload > 0 else 50
+                    
+                    # Risk categories
+                    if risk_score > 130:
+                        risk_category = "High"
+                        risk_color = "red"
+                    elif risk_score > 110:
+                        risk_category = "Moderate"
+                        risk_color = "orange"
+                    else:
+                        risk_category = "Low"
+                        risk_color = "green"
+                    
+                    st.markdown(f"### {player}")
+                    st.markdown(f"Risk Category: <span style='color:{risk_color};font-weight:bold;'>{risk_category}</span>", unsafe_allow_html=True)
+                    
+                    # Create progress bar for visualization
+                    st.progress(min(risk_score/200, 1.0))
+                    
+                    # Add recommendations
+                    if risk_category == "High":
+                        st.markdown("**Recommendations:**")
+                        st.markdown("- Consider resting player for upcoming matches")
+                        st.markdown("- Implement reduced bowling workload")
+                        st.markdown("- Schedule additional recovery sessions")
+                    elif risk_category == "Moderate":
+                        st.markdown("**Recommendations:**")
+                        st.markdown("- Monitor player closely during matches")
+                        st.markdown("- Consider reduced bowling spell lengths")
+                        st.markdown("- Increase recovery protocols")
+                    else:
+                        st.markdown("**Recommendations:**")
+                        st.markdown("- Maintain current workload management")
+                        st.markdown("- Continue regular monitoring")
+                    
+                    st.markdown("---")
+            else:
+                st.markdown(f"### {player}")
+                st.markdown("Insufficient data to calculate injury risk.")
+                st.markdown("---")
+        
         st.markdown("</div>", unsafe_allow_html=True)
-        
-        # Export options with improved styling
-        st.markdown("""
-        <div class="animated-section" style="animation-delay: 0.8s;">
-            <div style="background-color:#F3F4F6; padding:1rem; border-radius:0.5rem; 
-                        margin-top:1.5rem; text-align:center; border:1px solid #E5E7EB;">
-                <h3 style="margin-bottom:0.8rem; color:#1E3A8A;">Export Analysis</h3>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Centered download button with animation
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            st.download_button(
-                label="Download Analysis Report (CSV)",
-                data=pd.DataFrame([player_data]).to_csv(index=False),
-                file_name=f"{player_data['name']}_analysis.csv",
-                mime="text/csv",
-                use_container_width=True
-            )
-        # Screenshot export tool using html2canvas inside an iframe
-        components.html("""
-            <div style="text-align: center; margin-top: 2rem;">
-                <h4>Export Report</h4>
-                <button id="screenshot-btn" style="
-                    padding: 10px 20px; 
-                    background-color: #3B82F6; 
-                    color: white; 
-                    border: none; 
-                    border-radius: 5px; 
-                    cursor: pointer;
-                    font-size: 16px;
-                ">Download Screenshot</button>
-            </div>
-
-            <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-            <script>
-                const button = document.getElementById('screenshot-btn');
-                button.onclick = function() {
-                    html2canvas(parent.document.body).then(function(canvas) {
-                        var link = document.createElement('a');
-                        link.download = 'player_analysis.png';
-                        link.href = canvas.toDataURL();
-                        link.click();
-                    });
-                };
-            </script>
-        """, height=150)
-
+    
     else:
-        # More attractive placeholder when no analysis has been done
+        st.info("Please upload data files for at least one player to begin visualization.")
+        
+        # Show sample data format
+        st.markdown("<h2 class='sub-header'>Sample Data Format</h2>", unsafe_allow_html=True)
         st.markdown("""
-        <div style="background-color:#EFF6FF; padding:2rem; border-radius:0.5rem; 
-                    text-align:center; margin-top:2rem; border:1px dashed #60A5FA;">
-            <img src="https://www.svgrepo.com/show/474595/analytics.svg" width="80" 
-                 style="opacity:0.7; margin-bottom:1rem;">
-            <h3 style="color:#1E3A8A; margin-bottom:0.5rem;">No Analysis Results Yet</h3>
-            <p style="color:#4B5563;">Please input player statistics and click 'Generate Analysis Report' to view results.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        Upload CSV files with the following columns:
+        - **Date**: Match date (YYYY-MM-DD format)
+        - **Overs**: Number of overs bowled
+        - **Runs**: Runs conceded
+        - **Wick**: Wickets taken
+        - **Bowling_Intensity**: (Optional) Calculated from overs, runs, and wickets
+        - **Cumulative_Workload**: (Optional) Rolling average of bowling intensity
+        - **Workload_Variance**: (Optional) Rolling standard deviation of bowling intensity
+        
+        The system will calculate missing metrics if not provided.
+        """)
 
 # Improved footer with animation
 st.markdown("---")
