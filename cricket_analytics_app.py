@@ -14,7 +14,7 @@ from sklearn.neural_network import MLPClassifier
 
 # Set page config
 st.set_page_config(
-    page_title="Cricket Analytics Platform",
+    page_title="Cricklytics",
     page_icon="🏏",
     layout="wide"
 )
