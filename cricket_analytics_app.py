@@ -11,6 +11,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.neural_network import MLPClassifier
 import time
+import streamlit.components.v1 as components
 
 st.set_page_config(
     page_title="Cricklytics",
@@ -1055,17 +1056,26 @@ with tab2:
                 mime="text/csv",
                 use_container_width=True
             )
-        # Add a screenshot export button using html2canvas
-        st.markdown("""
-            <hr>
-            <h4>Export Report</h4>
-            <button id="screenshot-btn">Download Screenshot</button>
+        # Screenshot export tool using html2canvas inside an iframe
+        components.html("""
+            <div style="text-align: center; margin-top: 2rem;">
+                <h4>Export Report</h4>
+                <button id="screenshot-btn" style="
+                    padding: 10px 20px; 
+                    background-color: #3B82F6; 
+                    color: white; 
+                    border: none; 
+                    border-radius: 5px; 
+                    cursor: pointer;
+                    font-size: 16px;
+                ">Download Screenshot</button>
+            </div>
 
             <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
             <script>
                 const button = document.getElementById('screenshot-btn');
                 button.onclick = function() {
-                    html2canvas(document.body).then(function(canvas) {
+                    html2canvas(parent.document.body).then(function(canvas) {
                         var link = document.createElement('a');
                         link.download = 'player_analysis.png';
                         link.href = canvas.toDataURL();
@@ -1073,7 +1083,7 @@ with tab2:
                     });
                 };
             </script>
-        """, unsafe_allow_html=True)
+        """, height=150)
 
     else:
         # More attractive placeholder when no analysis has been done
