@@ -242,7 +242,7 @@ def display_header():
         """
         <div style="text-align: center; animation: fadeIn 1.5s ease-in-out; margin-bottom: 1.5rem;">
             <p style="font-size: 1.2rem; color: #4B5563;">
-                Analyze cricket player performance with AI-powered insights from pre-trained models — including a specialized injury prediction engine trained on player workload, match analytics, and recent form.
+                analyse cricket player performance with AI-powered insights from pre-trained models — including a specialized injury prediction engine trained on player workload, match analytics, and recent form.
             </p>
         </div>
         """, 
@@ -814,8 +814,8 @@ with st.sidebar:
 
 if app_mode == "Player Performance Analysis":
     # Initialize session state variables if not exist
-    if 'analyzed' not in st.session_state:
-        st.session_state.analyzed = False
+    if 'analysed' not in st.session_state:
+        st.session_state.analysed = False
     
     # Create tabs for player analysis
     analysis_tab1, analysis_tab2 = st.tabs(["Player Analysis", "Results"])
@@ -878,12 +878,12 @@ if app_mode == "Player Performance Analysis":
         
         col1, col2 = st.columns(2)
         with col1:
-            analyze_button = st.button("Analyze Player", use_container_width=True)
+            analyse_button = st.button("analyse Player", use_container_width=True)
         with col2:
             clear_button = st.button("Clear Data", use_container_width=True)
     
         # Process analysis if button is clicked
-        if analyze_button:
+        if analyse_button:
             # Show a progress bar for visual feedback
             progress_bar = st.progress(0)
             
@@ -919,7 +919,7 @@ if app_mode == "Player Performance Analysis":
             st.session_state.analysis_results = generate_analysis(player_data, model_category)
             st.session_state.player_data = player_data
             st.session_state.player_type = model_category
-            st.session_state.analyzed = True
+            st.session_state.analysed = True
             
             # Clear the progress bar
             progress_bar.empty()
@@ -932,7 +932,7 @@ if app_mode == "Player Performance Analysis":
             st.rerun()
     
     with analysis_tab2:
-        if st.session_state.get('analyzed', False):
+        if st.session_state.get('analysed', False):
             player_data = st.session_state.player_data
             analysis_results = st.session_state.analysis_results
             player_type = st.session_state.player_type
@@ -1117,7 +1117,7 @@ if app_mode == "Player Performance Analysis":
                     
                     ### Performance Optimization
                     * Continue monitoring strike rate and boundary percentage
-                    * Analyze match-ups against different bowling styles
+                    * analyse match-ups against different bowling styles
                     * Review footage of successful innings to identify patterns
                 """)
             else:
@@ -1129,13 +1129,13 @@ if app_mode == "Player Performance Analysis":
                     
                     ### Performance Optimization
                     * Monitor economy rate across different phases
-                    * Analyze wicket-taking deliveries for patterns
+                    * analyse wicket-taking deliveries for patterns
                     * Use data to identify optimal match-ups against batters
                 """)
             
             st.markdown("</div>", unsafe_allow_html=True)
         else:
-            st.info("Please fill player statistics and click 'Analyze Player' to view results.")
+            st.info("Please fill player statistics and click 'analyse Player' to view results.")
 
 #---------------------------------------------------------------------------
 # Workload & Injury Analysis Mode
