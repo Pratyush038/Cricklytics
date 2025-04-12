@@ -242,7 +242,7 @@ def display_header():
         """
         <div style="text-align: center; animation: fadeIn 1.5s ease-in-out; margin-bottom: 1.5rem;">
             <p style="font-size: 1.2rem; color: #4B5563;">
-                analyse cricket player performance with AI-powered insights from pre-trained models — including a specialized injury prediction engine trained on player workload, match analytics, and recent form.
+                Analyse cricket player performance with AI-powered insights from pre-trained models — including a specialized injury prediction engine trained on player workload, match analytics, and recent form.
             </p>
         </div>
         """, 
@@ -878,7 +878,7 @@ if app_mode == "Player Performance Analysis":
         
         col1, col2 = st.columns(2)
         with col1:
-            analyse_button = st.button("analyse Player", use_container_width=True)
+            analyse_button = st.button("Analyse Player", use_container_width=True)
         with col2:
             clear_button = st.button("Clear Data", use_container_width=True)
     
@@ -1117,7 +1117,7 @@ if app_mode == "Player Performance Analysis":
                     
                     ### Performance Optimization
                     * Continue monitoring strike rate and boundary percentage
-                    * analyse match-ups against different bowling styles
+                    * Analyse match-ups against different bowling styles
                     * Review footage of successful innings to identify patterns
                 """)
             else:
@@ -1129,13 +1129,13 @@ if app_mode == "Player Performance Analysis":
                     
                     ### Performance Optimization
                     * Monitor economy rate across different phases
-                    * analyse wicket-taking deliveries for patterns
+                    * Analyse wicket-taking deliveries for patterns
                     * Use data to identify optimal match-ups against batters
                 """)
             
             st.markdown("</div>", unsafe_allow_html=True)
         else:
-            st.info("Please fill player statistics and click 'analyse Player' to view results.")
+            st.info("Please fill player statistics and click 'Analyse Player' to view results.")
 
 #---------------------------------------------------------------------------
 # Workload & Injury Analysis Mode
